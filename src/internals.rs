@@ -141,40 +141,51 @@ impl Internals {
 				0xA1 => self.pc += if peripherals.is_key_pressed(self.v[x]) { 2 } else { 4 },
 				_    => panic!("Illegal instruction at {:#X}", self.pc)
 			}
-			0xF0 => {
-				match nn {
-					0x07 => {
-					}
-					0x0A => {
-					}
-					0x15 => {
-					}
-					0x18 => {
-					}
-					0x1E => self.i += self.v[x] as usize,
-					0x29 => self.i = self.v[x] as usize * 5,
-					0x33 => {
-						let (vx, i) = (self.v[x], self.i);
-						let h = vx / 100;
-						let u = vx % 10;
-						let d = (vx % 100) - u;
-						self.ram[i] = h;
-						self.ram[i + 1] = d;
-						self.ram[i + 2] = u;
-					}
-					0x55 => {
-						let upto = x + 1;
-						self.ram.write_data_at(self.i, &self.v[ .. upto]);
-						self.i += upto;
-					}
-					0x65 => {
-						let (prev_i, upto) = (self.i, x + 1);
-						self.i += upto;
-						self.v[ .. upto].copy_from_slice(&self.ram[prev_i .. self.i]);
-					}
-					_ => panic!("Illegal instruction at {:#X}", self.pc)
+			0xF0 => match nn {
+				0x07 => {
+					self.pc += 2;
 				}
-				self.pc += 2;
+				0x0A => if let Some(key_code) = peripherals.get_key_pressed() {
+					self.v[x] = key_code;
+					self.pc += 2;
+				}
+				0x15 => {
+					self.pc += 2;
+				}
+				0x18 => {
+					self.pc += 2;
+				}
+				0x1E => {
+					self.i += self.v[x] as usize;
+					self.pc += 2;
+				}
+				0x29 => {
+					self.i = self.v[x] as usize * 5;
+					self.pc += 2;
+				}
+				0x33 => {
+					let (vx, i) = (self.v[x], self.i);
+					let h = vx / 100;
+					let u = vx % 10;
+					let d = (vx % 100) - u;
+					self.ram[i] = h;
+					self.ram[i + 1] = d;
+					self.ram[i + 2] = u;
+					self.pc += 2;
+				}
+				0x55 => {
+					let upto = x + 1;
+					self.ram.write_data_at(self.i, &self.v[ .. upto]);
+					self.i += upto;
+					self.pc += 2;
+				}
+				0x65 => {
+					let (prev_i, upto) = (self.i, x + 1);
+					self.i += upto;
+					self.v[ .. upto].copy_from_slice(&self.ram[prev_i .. self.i]);
+					self.pc += 2;
+				}
+				_ => panic!("Illegal instruction at {:#X}", self.pc)
 			}
 			_ => panic!("Illegal instruction at {:#X}", self.pc)
 		}

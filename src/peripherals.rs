@@ -1,6 +1,6 @@
 extern crate minifb;
 
-use minifb::{ Window, WindowOptions, Key };
+use minifb::{ Window, WindowOptions, Key, KeyRepeat };
 
 const SCALE             : usize = 10;
 const CHIP_SCREEN_WIDTH : usize = 64;
@@ -9,6 +9,7 @@ const WIDTH             : usize = CHIP_SCREEN_WIDTH * SCALE;
 const HEIGHT            : usize = CHIP_SCREEN_HEIGHT * SCALE;
 
 pub struct Peripherals {
+	key   : Option<u8>,
 	window: Window,
 	buffer: [u32; WIDTH * HEIGHT]
 }
@@ -16,6 +17,7 @@ pub struct Peripherals {
 impl Peripherals {
 	pub fn new() -> Peripherals {
 		Peripherals{
+			key   : None,
 			window: Window::new("Rusty Emulator",
 			                    WIDTH, HEIGHT,
 			                    WindowOptions::default()).unwrap(),
@@ -64,13 +66,50 @@ impl Peripherals {
 		pixel_unset
 	}
 
-	#[inline]
-	pub fn display_update(&mut self) {
+	pub fn update(&mut self) {
+		self.key = match self.window.get_keys_pressed(KeyRepeat::Yes) {
+			Some(keys) => if keys.is_empty() {
+					None
+				} else {
+					match keys[0] {
+						Key::Key1 => Some(0x1),
+						Key::Key2 => Some(0x2),
+						Key::Key3 => Some(0x3),
+						Key::Key4 => Some(0xC),
+
+						Key::Q => Some(0x4),
+						Key::W => Some(0x5),
+						Key::E => Some(0x6),
+						Key::R => Some(0xD),
+
+						Key::A => Some(0x7),
+						Key::S => Some(0x8),
+						Key::D => Some(0x9),
+						Key::F => Some(0xE),
+
+						Key::Z => Some(0xA),
+						Key::X => Some(0x0),
+						Key::C => Some(0xB),
+						Key::V => Some(0xF),
+
+						_ => None
+					}
+				},
+			None => None
+		};
+
 		self.window.update_with_buffer(&self.buffer).unwrap();
 	}
 
-	// TO IMPLEMENT
-	pub fn is_key_pressed(&self, _key: u8) -> bool {
-		true
+	#[inline]
+	pub fn get_key_pressed(&self) -> Option<u8> {
+		self.key
+	}
+
+	pub fn is_key_pressed(&self, key_code: u8) -> bool {
+		match self.key {
+			Some(self_key_code) => self_key_code == key_code,
+			None => false
+		}
 	}
 }

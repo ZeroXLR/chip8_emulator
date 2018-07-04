@@ -21,8 +21,8 @@ impl Chip8 {
 
 	pub fn run_game(&mut self) {
 		while self.peripherals.display_is_open() {
+			self.peripherals.update();
 			self.internals.run_next(&mut self.peripherals);
-			self.peripherals.display_update();
 		}
 	}
 }

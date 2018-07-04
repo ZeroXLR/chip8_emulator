@@ -12,7 +12,7 @@ mod peripherals;
 mod chip8;
 
 fn main() -> std::io::Result<()> {
-	let mut rom  = File::open("games/INVADERS")?;
+	let mut rom  = File::open("games/UFO")?;
 	let mut code = Vec::<u8>::new();
 
 	rom.read_to_end(&mut code)?;
